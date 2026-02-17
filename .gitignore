@@ -1,0 +1,23 @@
+# Godot
+.godot/
+*.import
+
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.userprefs
+*.pidb
+*.booproj
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vs/
+*.swp
+*.swo
+*~
