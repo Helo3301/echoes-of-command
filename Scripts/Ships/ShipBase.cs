@@ -24,6 +24,10 @@ public abstract partial class ShipBase : CharacterBody3D
         MotionMode = MotionModeEnum.Floating;
         Stats = ShipClassDatabase.Get(ShipClass);
         Subsystems = new ShipSubsystems(Stats);
+
+        AddToGroup("ships");
+        CollisionLayer = 0b10;  // Layer 2 = ships
+        CollisionMask = 0b110;  // Detect ships + projectiles
     }
 
     public override void _PhysicsProcess(double delta)
