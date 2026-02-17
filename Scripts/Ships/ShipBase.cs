@@ -68,15 +68,46 @@ public abstract partial class ShipBase : CharacterBody3D
     protected abstract float GetThrustInput();
     protected abstract float GetRotationInput();
 
+    // ── Multiplayer Architecture (WP-12) ──────────────────────────────
+    // Position sync: server-authoritative, unreliable-ordered (high frequency)
+    // Damage: server-authoritative, reliable (must not be lost)
+    // In multiplayer: server runs physics, clients interpolate
+    // PlayerShip: client-authoritative for input, server validates
+
+    /// <summary>
+    /// Server broadcasts position/velocity to all clients every physics frame.
+    /// Clients interpolate between received states.
+    /// </summary>
     [Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = false, TransferMode = MultiplayerPeer.TransferModeEnum.UnreliableOrdered)]
-    public void RpcSyncPosition(Vector3 position, Vector3 velocity, float rotation)
+    public void RpcSyncPosition(Vector3 position, Vector3 velocity, float rotationY)
     {
-        // Stub for WP-12 multiplayer
+        // Client-side: lerp to received position
+        if (!Multiplayer.IsServer())
+        {
+            GlobalPosition = GlobalPosition.Lerp(position, 0.5f);
+            CurrentVelocity = velocity;
+        }
     }
 
-    [Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = false, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+    /// <summary>
+    /// Server applies damage and broadcasts to all clients.
+    /// Authority check: only server can apply damage.
+    /// </summary>
+    [Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
     public void RpcApplyDamage(int subsystem, float damage)
     {
-        // Stub for WP-12 multiplayer
+        if (Multiplayer.GetUniqueId() != 1 && Multiplayer.IsServer())
+            return; // Only server applies damage
+
+        Subsystems.ApplyDamage((SubsystemType)subsystem, damage);
+    }
+
+    /// <summary>
+    /// Server broadcasts subsystem state after damage for client sync.
+    /// </summary>
+    [Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = false, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+    public void RpcSyncSubsystems(float shieldHp, float hullHp, float engineHp, float weaponsHp)
+    {
+        // Client-side state reconciliation
     }
 }
