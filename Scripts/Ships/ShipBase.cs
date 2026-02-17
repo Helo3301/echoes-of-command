@@ -16,7 +16,7 @@ public abstract partial class ShipBase : CharacterBody3D
     public ShipStats Stats { get; private set; } = null!;
     public ShipSubsystems Subsystems { get; private set; } = null!;
 
-    public Vector3 CurrentVelocity { get; protected set; }
+    public Vector3 CurrentVelocity { get; internal set; }
     public int ShipId { get; set; }
 
     public override void _Ready()

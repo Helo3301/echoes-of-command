@@ -4,16 +4,24 @@ using EchoesOfCommand.Orders;
 namespace EchoesOfCommand.Ships;
 
 /// <summary>
-/// AI-controlled fleet ship. Full behavior tree in WP-06.
+/// AI-controlled fleet ship. Steering set by FleetAI controller.
 /// </summary>
 public partial class AIShip : ShipBase
 {
     private float _desiredThrust;
     private float _desiredRotation;
 
+    public event System.Action<Order>? OrderReceived;
+
+    public void SetSteering(float thrust, float rotation)
+    {
+        _desiredThrust = thrust;
+        _desiredRotation = rotation;
+    }
+
     public void ReceiveOrder(Order order)
     {
-        // WP-06: Process order after light-speed delay
+        OrderReceived?.Invoke(order);
     }
 
     protected override float GetThrustInput() => _desiredThrust;
